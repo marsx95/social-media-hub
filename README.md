@@ -72,3 +72,5 @@ File kreatif tetap berada di Drive. Repo ini tidak memuat PPTX, video, keyframe,
 Workflow lokal diuji dengan Node dan interaksi browser. Firebase Auth/Firestore belum dihubungkan ke project nyata; sinkronisasi dan rules perlu diuji dengan Firebase Emulator serta project yang dipilih sebelum tim memasukkan data operasional. Detail aturan dan langkah verifikasi ada di panduan Firebase.
 
 UI tersedia dalam Bahasa Indonesia, waktu ditampilkan dalam WIB. Data berupa metadata dan tautan; tidak memerlukan penyimpanan media di Firebase Storage.
+
+- Setiap kartu pekerjaan memiliki tautan langsung melalui tombol **Salin link**. URL menggunakan parameter `?task=<id>` dan langsung membuka detail pekerjaan setelah halaman dimuat.

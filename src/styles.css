@@ -12,3 +12,4 @@
 .button.primary{background:var(--yellow);border-color:var(--yellow);color:#0a0a0a;font-weight:700}.button.primary:hover{background:#ffcd3c}
 h1 em{color:#b88a00}.hero-link{color:var(--yellow)}.art-center{color:var(--yellow)}
 .wordmark-bottom{letter-spacing:1.4px}
+.dialog-header-actions{display:flex;align-items:center;gap:8px}.share-button{padding:8px 11px;color:#75622f;background:#fffaf0;border-color:#ead9a6;white-space:nowrap}@media(max-width:640px){.dialog-header-actions{align-self:flex-start}.share-button{font-size:12px;padding:8px}}
