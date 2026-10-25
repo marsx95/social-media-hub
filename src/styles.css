@@ -13,3 +13,4 @@
 h1 em{color:#b88a00}.hero-link{color:var(--yellow)}.art-center{color:var(--yellow)}
 .wordmark-bottom{letter-spacing:1.4px}
 .dialog-header-actions{display:flex;align-items:center;gap:8px}.share-button{padding:8px 11px;color:#75622f;background:#fffaf0;border-color:#ead9a6;white-space:nowrap}@media(max-width:640px){.dialog-header-actions{align-self:flex-start}.share-button{font-size:12px;padding:8px}}
+.delete-zone{display:flex;align-items:center;justify-content:space-between;gap:18px;margin-top:24px;padding:20px;border:1px solid #eed3c7;border-radius:10px;background:#fff9f5}.delete-zone h3{color:#934b3c}.delete-zone p{margin-top:5px;color:#9a756c;font-size:12px;line-height:1.5}.delete-zone .button{flex-shrink:0}@media(max-width:640px){.delete-zone{align-items:flex-start;flex-direction:column}.delete-zone .button{width:100%}}
