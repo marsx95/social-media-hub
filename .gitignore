@@ -1,0 +1,10 @@
+node_modules/
+dist/
+.firebase/
+.firebaserc
+firebase-config.js
+*.log
+.env*
+!.env.example
+service-account*.json
+backups/
