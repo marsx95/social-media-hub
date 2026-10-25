@@ -62,7 +62,7 @@ export class Store {
   }
   async deleteTask(id) {
     if(!this.ready)throw Error('Penyimpanan belum siap.');
-    if(this.actor!=='amar')throw Error('Hanya Amar yang dapat menghapus pekerjaan.');
+    if(!PEOPLE.includes(this.actor))throw Error('Hanya anggota tim yang terdaftar yang dapat menghapus pekerjaan.');
     if(this.tasks.some(task=>task.id!==id&&task.dependencies.includes(id)))throw Error('Pekerjaan ini masih menjadi prasyarat pekerjaan lain. Hapus prasyarat tersebut terlebih dahulu.');
     if(this.mode==='local') {
       const current=JSON.parse(localStorage.getItem(KEY)||'[]');

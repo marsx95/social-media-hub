@@ -74,4 +74,4 @@ Workflow lokal diuji dengan Node dan interaksi browser. Firebase Auth/Firestore 
 UI tersedia dalam Bahasa Indonesia, waktu ditampilkan dalam WIB. Data berupa metadata dan tautan; tidak memerlukan penyimpanan media di Firebase Storage.
 
 - Setiap kartu pekerjaan memiliki tautan langsung melalui tombol **Salin link**. URL menggunakan parameter `?task=<id>` dan langsung membuka detail pekerjaan setelah halaman dimuat.
-- Amar dapat menghapus pekerjaan dari panel detail. Penghapusan memerlukan konfirmasi dan ditolak jika pekerjaan masih menjadi prasyarat pekerjaan lain.
+- Semua anggota manusia yang terdaftar dapat menghapus pekerjaan dari panel detail. Penghapusan memerlukan konfirmasi dan ditolak jika pekerjaan masih menjadi prasyarat pekerjaan lain.

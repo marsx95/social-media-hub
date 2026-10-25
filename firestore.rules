@@ -116,7 +116,7 @@ service cloud.firestore {
               && request.resource.data.blocker == resource.data.blocker
               && ((forward(resource.data,request.resource.data) && request.resource.data.history[resource.data.history.size()].kind == 'advance')
                 || (isLead(ws) && decision(resource.data,request.resource.data) && request.resource.data.history[resource.data.history.size()].kind in ['approve','reject']))));
-        allow delete: if isAdmin(ws);
+        allow delete: if isMember(ws) && person(ws) in ['amar','nduy','arin','aldyan'];
       }
     }
   }
