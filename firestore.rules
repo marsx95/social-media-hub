@@ -88,6 +88,14 @@ service cloud.firestore {
         allow get: if request.auth != null && request.auth.uid == uid;
         allow list, create, update, delete: if false;
       }
+      match /contacts/{personId} {
+        // Email anggota untuk notifikasi. Semua anggota boleh membaca, hanya Amar yang mengubah.
+        allow read: if isMember(ws);
+        allow write: if isAdmin(ws) && personId in ['amar','nduy','arin','aldyan']
+          && request.resource.data.keys().hasOnly(['email'])
+          && request.resource.data.email is string && request.resource.data.email.size() <= 254
+          && (request.resource.data.email == '' || request.resource.data.email.matches('[^@ ]+@[^@ ]+[.][^@ ]+'));
+      }
       match /tasks/{id} {
         allow read: if isMember(ws);
         allow create: if isMember(ws) && person(ws) in ['amar','nduy','arin','aldyan']
