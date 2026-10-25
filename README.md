@@ -29,6 +29,7 @@ Situs dapat langsung di-host GitHub Pages dari root branch `main` (lihat [docs/F
 - Approval draft, storyboard/keyframe, dan final oleh Aldyan.
 - 64 slot draft November (8 carousel/static + 8 reels × 4 brand), 21 pekerjaan fondasi, serta satu slot draft awal Djakarta Padel.
 - Karnos Visual Magic dan Karnos Film menunggu KV. MEGAN memiliki prasyarat brief/format. Rimba Raya dapat langsung mengembangkan draft dari idea bank yang tersedia.
+- Notifikasi email lewat EmailJS ke PIC dan Aldyan, lihat [docs/EMAIL.md](docs/EMAIL.md).
 - Ekspor cadangan JSON dan impor yang hanya menambahkan ID baru.
 - Adapter Firebase Auth + Firestore dengan transaksi dan deteksi perubahan bersamaan, beserta aturan akses untuk persiapan integrasi.
 
