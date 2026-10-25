@@ -104,6 +104,23 @@ export function editTask(task, patch, actor) {
   else if ((changed('finalUrl')||changed('caption')||changed('subtasks'))&&['final_review','ready'].includes(task.stage)) {next.stage=task.type==='foundation'?'in_progress':task.type==='reel'?'editing':'production';reset='Hasil berubah; review final perlu diulang.';}
   return validateTask(addEvent(next,actor,reset||'Memperbarui detail pekerjaan.'));
 }
+// Draft Rimba Raya yang sudah ditulis di deck "Draft Konten Rimba Raya" (Drive), siap diajukan ke Aldyan.
+const RIMBA_DRAFT_DECK='https://drive.google.com/file/d/1pr_h4Dl9OySw0He4X21B73E__sVEsFgS/view';
+const RIMBA_DRAFTS={
+  carousel:[
+    {title:'Semut Rangrang, Si Penjahit Daun',brief:'Konten 1 · Footage Binatang · carousel tanpa karakter, 8 slide 4:5. Hook: "Daun ini dijahit. Penjahitnya bukan manusia." Tujuan save & share. Detail slide, caption, dan hashtag ada di deck draft.'},
+    {title:'3 Ayah Paling Sabar di Alam Indonesia',due:'2026-11-05',brief:'Konten 2 · Footage Binatang · carousel dengan karakter, 8 slide 4:5. Tayang Hari Ayah Nasional, Kamis 12 November 2026. Kasuari, kuda laut, rangkong. Detail di deck draft.'},
+    {title:'Ketemu Penyu Bertelur? Ini Aturan Rimba',brief:'Konten 4 · Rimba Tarzan · carousel 8 slide 4:5. 3 "Jangan" + 3 "Lakukan" saat bertemu penyu bertelur. Aturan diverifikasi dengan pengelola konservasi. Detail di deck draft.'},
+    {title:'24 Jam Camping di Tepi Mangrove',brief:'Konten 6 · Rimba Adventure · carousel 8 slide 4:5 dengan jam di tiap slide. Lokasi mangrove berizin + pemandu lokal. Detail di deck draft.'},
+    {title:'Episode Passport (ide bonus)',brief:'Ide bonus B1 · The Series · carousel recurring per episode: sampul paspor, Lokasi, Habitat, Satwa, Penemuan Kunci, Momen yang Diingat. Detail di deck draft.'},
+  ],
+  reel:[
+    {title:'Ikan Kok Jalan di Darat?',brief:'Konten 3 · Footage Binatang · reels 30–36 detik 9:16, 6 scene. Hook: "Ini ikan. Lagi jalan." Puyang memicu, Raya bertanya, Rimba menjelaskan ikan gelodok. Storyboard di deck draft.'},
+    {title:'Lucu, Tapi Bukan Peliharaan: Tarsius',brief:'Konten 5 · Rimba Tarzan · reels 35–40 detik 9:16, 6 scene. Hook: "Lucu banget… boleh dipelihara nggak?" Tanpa memegang satwa dan tanpa flash. Storyboard di deck draft.'},
+    {title:'Masak Ikan dalam Bambu',brief:'Konten 7 · Rimba Adventure · reels 45–55 detik 9:16 tanpa voice-over, food ASMR bersama nelayan lokal. Storyboard di deck draft.'},
+    {title:'Suara Siapa Ini? (ide bonus)',brief:'Ide bonus B2 · Footage Binatang · Story kuis tebak suara (pagi) + Reels 15 detik jawaban (sore). Kandidat: rangkong, owa, katak pohon, tokek.'},
+  ],
+};
 export function seedTasks() {
   const tasks=[];
   const add = data => {const t=makeTask({id:'seed-'+String(tasks.length+1).padStart(3,'0'),...data});tasks.push(t);return t.id;};
@@ -116,7 +133,11 @@ export function seedTasks() {
     const format=add({id:brand.id+'-formats',title:brand.id==='rimba'?'Adaptasi idea bank ke draft November':'Content format, pilar & idea bank',brand:brand.id,type:'foundation',stage:'todo',assignee:brand.id==='padel'?'gpt':'',priority:'high',due:'2026-10-29',dependencies:kv?[kv]:[],brief:brand.note});
     add({title:'Strategi sosial media & timeline 6 bulan',brand:brand.id,type:'foundation',stage:'todo',due:'2026-11-06',assignee:brand.id==='padel'?'amar':'',dependencies:kv?[kv]:[]});
     if (brand.id==='padel') {add({title:'Draft konten awal · Djakarta Padel',brand:'padel',type:'carousel',assignee:'gpt',due:'2026-10-31',dependencies:[format],brief:'Format & idea bank → draft → approval Aldyan → diserahkan ke Amar. Desain dan reels dikerjakan Amar; target jumlah belum ditetapkan.'});continue;}
-    for (const type of ['carousel','reel']) for (let n=1;n<=8;n++) add({title:`Draft ${type==='reel'?'reels':'carousel'} ${String(n).padStart(2,'0')} · November`,brand:brand.id,type,stage:brand.id==='rimba'?'draft':'idea',due:'2026-10-31',priority:'high',dependencies:kv?[kv]:brand.id==='megan'?[format]:[],brief:brand.id==='rimba'?'Pilih satu ide dari idea bank Rimba Raya yang sudah tersedia. Isi hook, isi utama, CTA, dan arahan visual sebelum diajukan ke Aldyan.':'',subtasks:type==='reel'?[{title:'Sound design',assignee:'',done:false},{title:'Caption / subtitle video',assignee:'',done:false}]:[]});
+    for (const type of ['carousel','reel']) for (let n=1;n<=8;n++) {
+      const named=brand.id==='rimba'?RIMBA_DRAFTS[type][n-1]:null;
+      if (named) {add({title:named.title,brand:'rimba',type,stage:'draft',due:named.due||'2026-10-31',priority:'high',draftUrl:RIMBA_DRAFT_DECK,brief:named.brief,subtasks:type==='reel'?[{title:'Sound design',assignee:'',done:false},{title:'Caption / subtitle video',assignee:'',done:false}]:[]});continue;}
+      add({title:`Draft ${type==='reel'?'reels':'carousel'} ${String(n).padStart(2,'0')} · November`,brand:brand.id,type,stage:brand.id==='rimba'?'draft':'idea',due:'2026-10-31',priority:'high',dependencies:kv?[kv]:brand.id==='megan'?[format]:[],brief:brand.id==='rimba'?'Pilih satu ide dari idea bank Rimba Raya yang sudah tersedia. Isi hook, isi utama, CTA, dan arahan visual sebelum diajukan ke Aldyan.':'',subtasks:type==='reel'?[{title:'Sound design',assignee:'',done:false},{title:'Caption / subtitle video',assignee:'',done:false}]:[]});
+    }
   }
   return tasks;
 }
