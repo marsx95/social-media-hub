@@ -1,0 +1,115 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function memberPath(ws) { return /databases/$(database)/documents/workspaces/$(ws)/members/$(request.auth.uid); }
+    function isMember(ws) { return request.auth != null && exists(memberPath(ws)); }
+    function person(ws) { return get(memberPath(ws)).data.personId; }
+    function isLead(ws) { return isMember(ws) && person(ws) == 'aldyan'; }
+    function isAdmin(ws) { return isMember(ws) && person(ws) == 'amar'; }
+    function knownPerson(id) { return id in ['', 'amar', 'nduy', 'arin', 'gpt', 'aldyan']; }
+    function safeLink(url) { return url is string && url.size() <= 2000 && (url == '' || url.matches('https?://[^ ].*')); }
+    function validStage(d) {
+      return d.type == 'foundation'
+        ? d.stage in ['todo', 'in_progress', 'final_review', 'ready']
+        : d.brand == 'padel'
+          ? d.stage in ['idea', 'draft', 'draft_review', 'draft_approved']
+          : d.type == 'carousel'
+            ? d.stage in ['idea', 'draft', 'draft_review', 'draft_approved', 'production', 'final_review', 'ready']
+            : d.stage in ['idea', 'draft', 'draft_review', 'draft_approved', 'storyboard', 'storyboard_review', 'video_generation', 'editing', 'final_review', 'ready'];
+    }
+    function valid(d, id) {
+      return d.keys().hasAll(['id','title','brand','type','month','stage','assignee','priority','due','brief','caption','draftUrl','storyboardUrl','finalUrl','blocker','dependencies','subtasks','history','revision','createdAt','updatedAt'])
+        && d.keys().hasOnly(['id','title','brand','type','month','stage','assignee','priority','due','brief','caption','draftUrl','storyboardUrl','finalUrl','blocker','dependencies','subtasks','history','revision','createdAt','updatedAt'])
+        && d.id == id && d.title is string && d.title.size() > 0 && d.title.size() <= 180
+        && d.brand in ['rimba','kvm','film','megan','padel']
+        && d.type in ['foundation','carousel','reel'] && validStage(d)
+        && d.month in ['2026-11','2026-12','2027-01','2027-02','2027-03','2027-04']
+        && knownPerson(d.assignee) && d.priority in ['normal','high','low']
+        && d.due is string && (d.due == '' || d.due.matches('[0-9]{4}-[0-9]{2}-[0-9]{2}'))
+        && d.brief is string && d.brief.size() <= 16000 && d.caption is string && d.caption.size() <= 8000
+        && d.blocker is string && d.blocker.size() <= 1000
+        && safeLink(d.draftUrl) && safeLink(d.storyboardUrl) && safeLink(d.finalUrl)
+        && d.dependencies is list && d.dependencies.size() <= 5 && !(id in d.dependencies)
+        && d.subtasks is list && d.subtasks.size() <= 40
+        && d.history is list && d.history.size() <= 300 && d.revision is int && d.revision >= 0
+        && d.createdAt is string && d.updatedAt is string;
+    }
+    function completed(ws, id) {
+      return get(/databases/$(database)/documents/workspaces/$(ws)/tasks/$(id)).data.stage == 'ready';
+    }
+    function dependencyReady(ws, d, n) { return d.dependencies.size() <= n || completed(ws, d.dependencies[n]); }
+    function unblocked(ws, d) {
+      return d.blocker == '' && dependencyReady(ws,d,0) && dependencyReady(ws,d,1)
+        && dependencyReady(ws,d,2) && dependencyReady(ws,d,3) && dependencyReady(ws,d,4)
+        && (d.type == 'foundation' || !(d.brand in ['kvm','film']) || completed(ws,d.brand+'-kv'));
+    }
+    function contentChanged(a,b) { return a.brief != b.brief || a.draftUrl != b.draftUrl; }
+    function finalChanged(a,b) { return a.finalUrl != b.finalUrl || a.caption != b.caption || a.subtasks != b.subtasks; }
+    function sameContent(a,b) { return a.brief == b.brief && a.draftUrl == b.draftUrl && a.storyboardUrl == b.storyboardUrl && a.finalUrl == b.finalUrl && a.caption == b.caption && a.subtasks == b.subtasks; }
+    function editStage(a,b) {
+      return a.type != 'foundation' && contentChanged(a,b) && !(a.stage in ['idea','draft'])
+        ? b.stage == 'draft'
+        : a.storyboardUrl != b.storyboardUrl && a.stage in ['storyboard_review','video_generation','editing','final_review','ready']
+          ? b.stage == 'storyboard'
+          : finalChanged(a,b) && a.stage in ['final_review','ready']
+            ? b.stage == (a.type == 'foundation' ? 'in_progress' : a.type == 'reel' ? 'editing' : 'production')
+            : a.stage == b.stage;
+    }
+    function forward(a,b) {
+      return (a.stage == 'idea' && b.stage == 'draft')
+        || (a.stage == 'draft' && b.stage == 'draft_review' && (b.brief != '' || b.draftUrl != ''))
+        || (a.stage == 'draft_approved' && a.brand != 'padel' && b.stage == (a.type == 'reel' ? 'storyboard' : 'production'))
+        || (a.stage == 'storyboard' && b.stage == 'storyboard_review' && b.storyboardUrl != '')
+        || (a.stage == 'video_generation' && b.stage == 'editing' && b.finalUrl != '')
+        || (a.stage in ['production','editing','in_progress'] && b.stage == 'final_review' && b.finalUrl != '' && (a.type == 'foundation' || b.caption != ''))
+        || (a.stage == 'todo' && b.stage == 'in_progress');
+    }
+    function decision(a,b) {
+      return (a.stage == 'draft_review' && b.stage in ['draft_approved','draft'])
+        || (a.stage == 'storyboard_review' && b.stage in ['video_generation','storyboard'])
+        || (a.stage == 'final_review' && (b.stage == 'ready' || b.stage == (a.type == 'foundation' ? 'in_progress' : a.type == 'reel' ? 'editing' : 'production')));
+    }
+    function appendedEvent(ws,a,b) {
+      let index = a.history.size();
+      let e = b.history[index];
+      return b.history.size() == index+1
+        && b.history.removeAll([e]) == a.history
+        && e.keys().hasOnly(['actor','text','kind','at'])
+        && e.actor == person(ws) && e.actor != 'gpt'
+        && e.text is string && e.text.size() > 0 && e.text.size() <= 3000
+        && e.at is string && e.kind in ['edit','comment','advance','approve','reject'];
+    }
+    match /workspaces/{ws} {
+      allow read: if isMember(ws);
+      allow write: if false;
+      match /members/{uid} {
+        // Members are provisioned in the Firebase console or trusted admin environment.
+        // No client may assign itself a role or change its personId.
+        allow get: if request.auth != null && request.auth.uid == uid;
+        allow list, create, update, delete: if false;
+      }
+      match /tasks/{id} {
+        allow read: if isMember(ws);
+        allow create: if isMember(ws) && person(ws) in ['amar','nduy','arin','aldyan']
+          && valid(request.resource.data,id) && request.resource.data.revision == 0
+          && request.resource.data.history.size() == 0
+          && (request.resource.data.type == 'foundation' ? request.resource.data.stage == 'todo' : request.resource.data.stage in ['idea','draft'])
+          && (request.resource.data.type == 'foundation' || !(request.resource.data.brand in ['kvm','film']) || request.resource.data.stage == 'idea');
+        allow update: if isMember(ws) && person(ws) in ['amar','nduy','arin','aldyan']
+          && valid(request.resource.data,id)
+          && request.resource.data.revision == resource.data.revision+1
+          && request.resource.data.createdAt == resource.data.createdAt
+          && request.resource.data.brand == resource.data.brand && request.resource.data.type == resource.data.type
+          && request.resource.data.month == resource.data.month
+          && appendedEvent(ws,resource.data,request.resource.data)
+          && ((editStage(resource.data,request.resource.data) && request.resource.data.history[resource.data.history.size()].kind in ['edit','comment'])
+            || (sameContent(resource.data,request.resource.data) && unblocked(ws,resource.data)
+              && request.resource.data.dependencies == resource.data.dependencies
+              && request.resource.data.blocker == resource.data.blocker
+              && ((forward(resource.data,request.resource.data) && request.resource.data.history[resource.data.history.size()].kind == 'advance')
+                || (isLead(ws) && decision(resource.data,request.resource.data) && request.resource.data.history[resource.data.history.size()].kind in ['approve','reject']))));
+        allow delete: if false;
+      }
+    }
+  }
+}
