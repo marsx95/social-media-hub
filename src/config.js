@@ -11,9 +11,9 @@ export const firebaseConfig = {
 // Notifikasi email lewat EmailJS (gratis 200 email/bulan). Kosongkan untuk mematikan.
 // Ambil dari dashboard EmailJS: Account → Public Key, Email Services → Service ID, Email Templates → Template ID.
 export const emailjsConfig = {
-  publicKey: '',
-  serviceId: '',
-  templateId: '',
+  publicKey: 'IlRZ8xgNTJL4QUzkU',
+  serviceId: 'service_10i882r',
+  templateId: 'template_es0ajt6',
 };
 export const workspaceId = 'production';
 export const firebaseSdkVersion = '12.19.0';
